@@ -1,0 +1,23 @@
+# Global owners - require review for all changes
+* @carol230
+
+# Data science and ML model files
+/src/models/ @carol230
+/notebooks/ @carol230
+/data/ @carol230
+/models/ @carol230
+
+# Configuration and infrastructure
+/.github/ @carol230
+/requirements.txt @carol230
+/Makefile @carol230
+/GIT_WORKFLOW.md @carol230
+
+# Documentation
+*.md @carol230
+/docs/ @carol230
+
+# MLflow and experiments
+/mlruns/ @carol230
+run_with_mlflow.py @carol230
+start_mlflow_ui.py @carol230

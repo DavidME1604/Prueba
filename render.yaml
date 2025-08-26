@@ -1,0 +1,38 @@
+# Render.com deployment configuration
+# Deploy for FREE: https://render.com
+
+services:
+  # MLflow Web Service
+  - type: web
+    name: celec-mlflow
+    env: python
+    plan: free  # FREE TIER
+    buildCommand: pip install -r requirements.txt
+    startCommand: python start_mlflow_ui.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: MLFLOW_BACKEND_STORE_URI
+        fromDatabase:
+          name: celec-db
+          property: connectionString
+      - key: MLFLOW_DEFAULT_ARTIFACT_ROOT
+        value: ./mlruns
+    
+  # Data Processing Service  
+  - type: worker
+    name: celec-worker
+    env: python
+    plan: free  # FREE TIER
+    buildCommand: pip install -r requirements.txt
+    startCommand: python src/models/data_analysis.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+# Free PostgreSQL Database
+databases:
+  - name: celec-db
+    plan: free  # FREE TIER
+    databaseName: mlflow
+    user: mlflow

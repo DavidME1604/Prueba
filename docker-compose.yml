@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Main application
+  celec-app:
+    build: 
+      context: .
+      target: production
+    container_name: celec-flow-predictor
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./reports:/app/reports
+      - ./mlruns:/app/mlruns
+    environment:
+      - PYTHONPATH=/app
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      - mlflow
+    networks:
+      - celec-network
+    restart: unless-stopped
+
+  # MLflow tracking server
+  mlflow:
+    build: 
+      context: .
+      target: base
+    container_name: celec-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./models:/app/models
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlruns/mlflow.db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/app/mlruns
+    command: |
+      sh -c "
+      mlflow server \
+        --backend-store-uri sqlite:///mlruns/mlflow.db \
+        --default-artifact-root /app/mlruns \
+        --host 0.0.0.0 \
+        --port 5000
+      "
+    networks:
+      - celec-network
+    restart: unless-stopped
+
+  # Jupyter development environment
+  jupyter:
+    build:
+      context: .
+      target: development
+    container_name: celec-jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=celec-flow-2025
+    networks:
+      - celec-network
+    profiles:
+      - development
+
+  # Data processing scheduler (optional)
+  scheduler:
+    build:
+      context: .
+      target: production
+    container_name: celec-scheduler
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./scripts:/app/scripts
+    environment:
+      - PYTHONPATH=/app
+      - CRON_SCHEDULE=0 2 * * *  # Daily at 2 AM
+    command: |
+      sh -c "
+      echo '$${CRON_SCHEDULE} cd /app && python src/data/download_retrospective.py && python src/models/data_analysis.py' > /tmp/crontab.txt &&
+      crontab /tmp/crontab.txt &&
+      crond -f
+      "
+    networks:
+      - celec-network
+    profiles:
+      - production
+
+networks:
+  celec-network:
+    driver: bridge
+
+volumes:
+  mlflow-data:
+    driver: local
+  model-data:
+    driver: local

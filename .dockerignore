@@ -1,0 +1,50 @@
+# Git files
+.git
+.gitignore
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+celec_mlflow_env/
+celec_env/
+venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large data files (download during build if needed)
+data/raw/*.csv
+
+# MLflow runs (will be mounted)
+mlruns/
+
+# Documentation
+*.md
+docs/
+
+# Development files
+*.log
+.env
+.env.local
+
+# Test files
+tests/
+*.test
+
+# Temporary files
+tmp/
+temp/
